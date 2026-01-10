@@ -1,45 +1,164 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { supabase } from "../lib/supabase";
+import { redirect } from 'astro';
 
-const accessToken = Astro.cookies.get("sb-access-token");
-const refreshToken = Astro.cookies.get("sb-refresh-token");
+const cookies = Astro.cookies;  // ✅ FIX: Use Astro.cookies
 
-if (!accessToken || !refreshToken) {
-  return Astro.redirect("/signin");
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+if (!accessToken?.value || !refreshToken?.value) {
+  return redirect("/signin");
 }
 
-let session;
-try {
-  session = await supabase.auth.setSession({
-    refresh_token: refreshToken.value,
-    access_token: accessToken.value,
-  });
-  if (session.error) {
-    Astro.cookies.delete("sb-access-token", {
-      path: "/",
-    });
-    Astro.cookies.delete("sb-refresh-token", {
-      path: "/",
-    });
-    return Astro.redirect("/signin");
-  }
-} catch (error) {
-  Astro.cookies.delete("sb-access-token", {
-    path: "/",
-  });
-  Astro.cookies.delete("sb-refresh-token", {
-    path: "/",
-  });
-  return Astro.redirect("/signin");
-}
-
-const email = session.data.user?.email;
+const userEmailCookie = cookies.get("user-email")?.value || 'gardener@example.com';
+const displayName = userEmailCookie.split('@')[0] || userEmailCookie || 'Gardener';
 ---
-<Layout title="dashboard">
-  <h1>Welcome {email}</h1>
-  <p>We are happy to see you here</p>
-  <form action="/api/auth/signout">
-    <button type="submit">Sign out</button>
-  </form>
+
+
+<Layout title="Dashboard - Leaf by Leaf">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-900 via-green-800 to-teal-900">
+    <!-- Header -->
+    <header class="bg-white/10 backdrop-blur-xl border-b border-white/20">
+      <div class="max-w-6xl mx-auto px-6 py-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <span class="text-2xl">🌿</span>
+            </div>
+            <div>
+              <h1 class="text-3xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                Dashboard
+              </h1>
+              <p class="text-white/70 text-sm">Welcome back, {displayName}!</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="text-white/80 text-sm hidden md:block">Your plants are thriving</span>
+            <div class="flex gap-3">
+              <a href="/posts" class="bg-emerald-500/90 hover:bg-emerald-600 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 text-sm">
+                View Posts
+              </a>
+              <form action="/api/auth/logout" method="post" class="inline">
+                <button class="bg-red-500/90 hover:bg-red-600 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-red-500/25 transition-all duration-300 text-sm">
+                  Sign Out
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-6 py-12 lg:py-16">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Stats Cards & Activity -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Enhanced Stats Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300 group">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-16 h-16 bg-green-400/20 group-hover:bg-green-400/40 rounded-2xl flex items-center justify-center transition-all duration-300">
+                  <span class="text-2xl">📝</span>
+                </div>
+                <div>
+                  <p class="text-white/70 text-sm font-medium uppercase tracking-wide">Total Posts</p>
+                  <p class="text-4xl font-black text-white">12</p>
+                </div>
+              </div>
+              <a href="/posts/new" class="text-emerald-300 hover:text-emerald-200 font-semibold text-sm flex items-center gap-1 group-hover:translate-x-1 transition-all duration-200">Create New Post →</a>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300 group">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-16 h-16 bg-teal-400/20 group-hover:bg-teal-400/40 rounded-2xl flex items-center justify-center transition-all duration-300">
+                  <span class="text-2xl">⭐</span>
+                </div>
+                <div>
+                  <p class="text-white/70 text-sm font-medium uppercase tracking-wide">Plants Saved</p>
+                  <p class="text-4xl font-black text-white">47</p>
+                </div>
+              </div>
+              <a href="/plants" class="text-emerald-300 hover:text-emerald-200 font-semibold text-sm flex items-center gap-1 group-hover:translate-x-1 transition-all duration-200">View Collection →</a>
+            </div>
+
+            <!-- New Stats Card: Plants Needing Care -->
+            <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300 group md:col-span-2">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-16 h-16 bg-orange-400/20 group-hover:bg-orange-400/40 rounded-2xl flex items-center justify-center transition-all duration-300">
+                  <span class="text-2xl">💧</span>
+                </div>
+                <div>
+                  <p class="text-white/70 text-sm font-medium uppercase tracking-wide">Plants Needing Attention</p>
+                  <p class="text-4xl font-black text-white">3</p>
+                </div>
+              </div>
+              <a href="/plants/needs-care" class="text-emerald-300 hover:text-emerald-200 font-semibold text-sm flex items-center gap-1 group-hover:translate-x-1 transition-all duration-200">Check Now →</a>
+            </div>
+          </div>
+
+          <!-- Enhanced Recent Activity -->
+          <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300">
+            <h2 class="text-2xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-6">
+              Recent Activity
+            </h2>
+            <div class="space-y-4">
+              <div class="flex items-center gap-4 p-6 bg-white/10 hover:bg-white/20 rounded-2xl border border-white/30 transition-all duration-300">
+                <div class="w-12 h-12 bg-green-400/40 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <span class="text-xl">✨</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-white font-semibold truncate">Added "Monstera Deliciosa" to collection</p>
+                  <p class="text-white/60 text-sm">2 hours ago</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 p-6 bg-white/10 hover:bg-white/20 rounded-2xl border border-white/30 transition-all duration-300">
+                <div class="w-12 h-12 bg-teal-400/40 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <span class="text-xl">📝</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-white font-semibold truncate">Published "Fiddle Leaf Fig Care Guide"</p>
+                  <p class="text-white/60 text-sm">1 day ago</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 p-6 bg-white/10 hover:bg-white/20 rounded-2xl border border-white/30 transition-all duration-300">
+                <div class="w-12 h-12 bg-purple-400/40 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <span class="text-xl">💧</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-white font-semibold truncate">Watered "ZZ Plant"</p>
+                  <p class="text-white/60 text-sm">2 days ago</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enhanced Quick Actions -->
+        <div class="space-y-6">
+          <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 sticky top-8 h-fit hover:bg-white/20 transition-all duration-300">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <span>⚡</span> Quick Actions
+            </h3>
+            <div class="space-y-4">
+              <a href="/posts/new" class="block p-5 bg-emerald-500/20 hover:bg-emerald-500/40 border border-emerald-500/40 text-emerald-100 rounded-2xl font-semibold text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-emerald-500/25 shadow-lg">
+                🖊️ New Post
+              </a>
+              <a href="/plants/add" class="block p-5 bg-teal-500/20 hover:bg-teal-500/40 border border-teal-500/40 text-teal-100 rounded-2xl font-semibold text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-teal-500/25 shadow-lg">
+                🌱 Add Plant
+              </a>
+              <a href="/plants/needs-care" class="block p-5 bg-orange-500/20 hover:bg-orange-500/40 border border-orange-500/40 text-orange-100 rounded-2xl font-semibold text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-orange-500/25 shadow-lg">
+                💧 Needs Care
+              </a>
+              <a href="/profile" class="block p-5 bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/40 text-purple-100 rounded-2xl font-semibold text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-purple-500/25 shadow-lg">
+                ⚙️ Profile
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 </Layout>

@@ -1,9 +1,7 @@
-// With `output: 'static'` configured:
-// export const prerender = false;
-import type { APIRoute } from "astro";
+import { APIContext } from 'astro';
 
-export const GET: APIRoute = async ({ cookies, redirect }) => {
-  cookies.delete("sb-access-token", { path: "/" });
-  cookies.delete("sb-refresh-token", { path: "/" });
-  return redirect("/signin");
-};
+export async function POST({ cookies }: APIContext) {
+  cookies.delete('sb-access-token', { path: '/' });
+  cookies.delete('sb-refresh-token', { path: '/' });
+  return new Response(null, { status: 302, headers: { Location: '/signin' } });
+}

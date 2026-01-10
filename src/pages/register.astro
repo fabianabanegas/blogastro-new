@@ -2,14 +2,51 @@
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout title="Register">
-  <h1>Register</h1>
-  <p>Already have an account? <a href="/signin">Sign in</a></p>
-  <form action="/api/auth/register" method="post">
-    <label for="email">Email</label>
-    <input type="email" name="email" id="email" />
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" />
-    <button type="submit">Register</button>
-  </form>
+<Layout title="Register - Leaf by Leaf">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-900 via-green-900 to-teal-900 flex items-center justify-center p-8">
+    <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-12 max-w-md w-full border border-white/20 shadow-2xl">
+      <div class="text-center mb-12">
+        <h1 class="text-4xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-4">
+          Create Account
+        </h1>
+        <p class="text-white/80 text-lg">Join Leaf by Leaf and start your plant journey</p>
+      </div>
+      
+      <p class="text-center text-white/70 mb-8">
+        Already have an account? <a href="/signin" class="text-emerald-300 hover:text-emerald-200 font-semibold underline">Sign in</a>
+      </p>
+      
+      <form action="/api/auth/register" method="post" class="space-y-6">
+        <div>
+          <label for="email" class="block text-white/90 font-medium mb-3">Email</label>
+          <input 
+            id="email"
+            name="email" 
+            type="email" 
+            required 
+            class="w-full px-5 py-4 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 focus:bg-white/30 transition-all duration-300"
+            placeholder="your@email.com"
+          />
+        </div>
+        <div>
+          <label for="password" class="block text-white/90 font-medium mb-3">Password</label>
+          <input 
+            id="password"
+            name="password" 
+            type="password" 
+            required 
+            minlength="6"
+            class="w-full px-5 py-4 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 focus:bg-white/30 transition-all duration-300"
+            placeholder="At least 6 characters"
+          />
+        </div>
+        <button 
+          type="submit"
+          class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-4 px-8 rounded-2xl text-xl shadow-xl hover:shadow-emerald-500/25 transform hover:-translate-y-1 transition-all duration-300"
+        >
+          Create Account
+        </button>
+      </form>
+    </div>
+  </div>
 </Layout>

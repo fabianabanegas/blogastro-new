@@ -1,24 +1,68 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { cookies, redirect } from "astro";
 
-const { cookies, redirect } = Astro;
+const accessToken = cookies?.get?.("sb-access-token");
+const refreshToken = cookies?.get?.("sb-refresh-token");
 
-const accessToken = cookies.get("sb-access-token");
-const refreshToken = cookies.get("sb-refresh-token");
-
-if (accessToken && refreshToken) {
+if (accessToken?.value && refreshToken?.value) {
   return redirect("/dashboard");
 }
 ---
 
-<Layout title="Sign in">
-  <h1>Sign in</h1>
-  <p>New here? <a href="/register">Create an account</a></p>
-  <form action="/api/auth/signin" method="post">
-    <label for="email">Email</label>
-    <input type="email" name="email" id="email" />
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" />
-    <button type="submit">Login</button>
-  </form>
+<Layout title="Sign In - Leaf by Leaf">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-900 via-green-900 to-teal-900 flex items-center justify-center p-8">
+    <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-12 max-w-md w-full border border-white/20 shadow-2xl">
+      <div class="text-center mb-12">
+        <h1 class="text-4xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-4">
+          Welcome Back
+        </h1>
+        <p class="text-white/80 text-lg">Sign in to your Leaf by Leaf account</p>
+      </div>
+      
+      <p class="text-center text-white/70 mb-8">
+        New here? <a href="/register" class="text-emerald-300 hover:text-emerald-200 font-semibold underline">Create an account</a>
+      </p>
+      
+      <!-- Error display -->
+      {Astro.url.searchParams.get("error") && (
+        <div class="bg-red-500/20 border border-red-500/50 text-red-100 p-6 rounded-2xl mb-6 text-center">
+          <p class="font-semibold mb-2">{decodeURIComponent(Astro.url.searchParams.get("error")!)}</p>
+          <a href="/signin" class="text-red-200 underline text-sm">Try again</a>
+        </div>
+      )}
+      
+      <form action="/api/auth/signin" method="post" class="space-y-6">
+        <div>
+          <label for="email" class="block text-white/90 font-medium mb-3">Email</label>
+          <input 
+            id="email"
+            name="email" 
+            type="email" 
+            required 
+            class="w-full px-5 py-4 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 focus:bg-white/30 transition-all duration-300"
+            placeholder="your@email.com"
+          />
+        </div>
+        <div>
+          <label for="password" class="block text-white/90 font-medium mb-3">Password</label>
+          <input 
+            id="password"
+            name="password" 
+            type="password" 
+            required 
+            minlength="6"
+            class="w-full px-5 py-4 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 focus:bg-white/30 transition-all duration-300"
+            placeholder="••••••••"
+          />
+        </div>
+        <button 
+          type="submit"
+          class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-4 px-8 rounded-2xl text-xl shadow-xl hover:shadow-emerald-500/25 transform hover:-translate-y-1 transition-all duration-300"
+        >
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
 </Layout>
