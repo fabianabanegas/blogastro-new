@@ -39,7 +39,9 @@ export async function POST({ request, params, url }) {
     }
 
     console.log('¡Comentario creado! ID:', data.id);
-    return Response.redirect('/posts', 302);
+    
+    // ✅ FIX: Línea 57 corregida
+    return Response.redirect(new URL('/posts', import.meta.env.SITE || 'http://localhost:4321'), 302);
     
   } catch (error) {
     console.error('Error total:', error.message);

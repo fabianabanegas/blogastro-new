@@ -1,6 +1,5 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-return Astro.redirect("/path");
 
 const cookies = Astro.cookies;
 
@@ -16,30 +15,6 @@ const displayName = userEmailCookie.split("@")[0] || userEmailCookie || "Gardene
 
 const supabaseUrl = 'https://fszpmitzgepkbykhmgyu.supabase.co'; 
 const supabaseKey = 'sb_publishable_PfBgFXn5d5KASgbiYBT4TQ_VtkYCJXv'; 
-
-// 👇 NUEVO: Manejar DELETE solo en POST
-if (Astro.request.method === 'POST') {
-  const formData = await Astro.request.formData();
-  const action = formData.get('action');
-  const postId = formData.get('postId');
-
-  if (action === 'delete' && postId) {
-    try {
-      const deleteResponse = await fetch(`${supabaseUrl}/rest/v1/posts?id=eq.${postId}`, {
-        method: 'DELETE',
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`
-        }
-      });
-      if (deleteResponse.ok) {
-        return redirect('./');
-      }
-    } catch (error) {
-      console.error('Delete error:', error);
-    }
-  }
-}
 
 let posts = [];
 try {
@@ -122,11 +97,13 @@ try {
                 <h3 class="text-lg font-bold text-white flex-1 pr-4">{post.title}</h3>
                 <div class="flex gap-2 flex-shrink-0">
                   <a href={`/posts/${post.id}/edit`} class="text-emerald-300 hover:text-emerald-100 text-sm px-3 py-1 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap">Edit</a>
-                  <form method="post" action="./" class="inline">
-                    <input type="hidden" name="action" value="delete" />
+                  
+                  <!-- 👇 CAMBIADO: Ahora apunta a la nueva API segura -->
+                  <form method="post" action={`/api/posts/${post.id}/delete`} class="inline">
                     <input type="hidden" name="postId" value={post.id} />
                     <button type="submit" class="text-red-300 hover:text-red-100 text-sm px-3 py-1 rounded-xl hover:bg-red/10 transition-all whitespace-nowrap" onclick="return confirm('Delete this post?')">Delete</button>
                   </form>
+                  
                 </div>
               </div>
               <p class="text-white/90 mb-4 leading-relaxed">{post.content}</p>

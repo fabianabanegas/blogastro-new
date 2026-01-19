@@ -1,20 +1,11 @@
 ---
-import Layout from "../layouts/Layout.astro";
-
-const cookies = Astro.cookies;  
-
-const accessToken = cookies.get("sb-access-token");
-const refreshToken = cookies.get("sb-refresh-token");
-
-if (!accessToken?.value || !refreshToken?.value) {
-  return Astro.redirect("/signin"); 
-
-}
+import Layout from '../layouts/Layout.astro';
+const cookies = Astro.cookies;
+if (!cookies.has("sb-access-token")) return Astro.redirect("/signin");
 
 const userEmailCookie = cookies.get("user-email")?.value || 'gardener@example.com';
-const displayName = userEmailCookie.split('@')[0] || userEmailCookie || 'Gardener';
+const displayName = userEmailCookie.split('@')[0] || userEmailCookie || 'Gardener'; 
 ---
-
 
 <Layout title="Dashboard - Leaf by Leaf">
   <div class="min-h-screen bg-gradient-to-br from-emerald-900 via-green-800 to-teal-900">
@@ -49,7 +40,6 @@ const displayName = userEmailCookie.split('@')[0] || userEmailCookie || 'Gardene
 
     <main class="max-w-6xl mx-auto px-6 py-12 lg:py-16">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
 
         <div class="lg:col-span-2 space-y-6">
 
@@ -74,7 +64,6 @@ const displayName = userEmailCookie.split('@')[0] || userEmailCookie || 'Gardene
               <a href="/plants" class="text-emerald-300 hover:text-emerald-200 font-semibold text-sm flex items-center gap-1 group-hover:translate-x-1 transition-all duration-200">View Collection →</a>
             </div>
 
-
             <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300 group md:col-span-2">
               <div class="flex items-center gap-4 mb-6">
                 <div>
@@ -85,8 +74,7 @@ const displayName = userEmailCookie.split('@')[0] || userEmailCookie || 'Gardene
               <a href="/plants/needs-care" class="text-emerald-300 hover:text-emerald-200 font-semibold text-sm flex items-center gap-1 group-hover:translate-x-1 transition-all duration-200">Check Now →</a>
             </div>
           </div>
-
-        
+          
         </div>
 
         <div class="space-y-6">
@@ -104,7 +92,8 @@ const displayName = userEmailCookie.split('@')[0] || userEmailCookie || 'Gardene
               <a href="/plants/needs-care" class="block p-5 bg-orange-500/20 hover:bg-orange-500/40 border border-orange-500/40 text-orange-100 rounded-2xl font-semibold text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-orange-500/25 shadow-lg">
                 Needs Care
               </a>
-              <a href="/profile" class="block p-5 bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/40 text-purple-100 rounded-2xl font-semibold text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-purple-500/25 shadow-lg">
+              <!-- 👇 CAMBIADO: Ahora apunta a /account (página de gestión de cuentas) -->
+              <a href="/account" class="block p-5 bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/40 text-purple-100 rounded-2xl font-semibold text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-purple-500/25 shadow-lg">
                 Profile
               </a>
             </div>

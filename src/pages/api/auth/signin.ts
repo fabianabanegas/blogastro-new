@@ -24,7 +24,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return Response.json({ error: 'No session created' }, { status: 400 });
     }
 
-    // Set cookies
     cookies.set('sb-access-token', data.session.access_token, {
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
@@ -42,8 +41,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       maxAge: 60 * 60 * 24 * 30,
     });
 
-    // Use Response.redirect with FULL URL
-    return Response.redirect('http://localhost:4321/dashboard', 302);
+    // ✅ FIX: URL absoluta para Netlify/Astro SSR
+    return Response.redirect(new URL('/dashboard', import.meta.env.SITE || 'http://localhost:4321'), 302);
   } catch (error: any) {
     return Response.json({ error: error.message }, { status: 400 });
   }
