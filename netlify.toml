@@ -1,5 +1,2 @@
-netlify.toml
-[build]
-command = "npm run build"
-publish = "dist"
-functions = "dist/functions"
+# netlify.toml vacío o solo redirects/plugins si necesitas
+# Elimina [build] completamente
