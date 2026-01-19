@@ -1,5 +1,5 @@
 import { defineConfig } from 'astro/config';
-import node from '@astrojs/node';  // Install: npm i @astrojs/node
+import node from '@astrojs/node';  
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({

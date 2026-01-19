@@ -1,0 +1,180 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { redirect } from "astro";
+
+const cookies = Astro.cookies;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+if (!accessToken?.value || !refreshToken?.value) {
+  return redirect("/signin");
+}
+
+const userEmailCookie = cookies.get("user-email")?.value || "gardener@example.com";
+const displayName = userEmailCookie.split("@")[0] || userEmailCookie || "Gardener";
+
+const supabaseUrl = 'https://fszpmitzgepkbykhmgyu.supabase.co'; 
+const supabaseKey = 'sb_publishable_PfBgFXn5d5KASgbiYBT4TQ_VtkYCJXv'; 
+
+// 👇 NUEVO: Manejar DELETE solo en POST
+if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData();
+  const action = formData.get('action');
+  const postId = formData.get('postId');
+
+  if (action === 'delete' && postId) {
+    try {
+      const deleteResponse = await fetch(`${supabaseUrl}/rest/v1/posts?id=eq.${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`
+        }
+      });
+      if (deleteResponse.ok) {
+        return redirect('./');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+    }
+  }
+}
+
+let posts = [];
+try {
+  const response = await fetch(`${supabaseUrl}/rest/v1/posts?select=id,title,content,author_email,author_name,created_at,comments(count)&order=created_at.desc&author_email=eq.${userEmailCookie}`, {
+    method: 'GET',
+    headers: {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  
+  if (response.ok) {
+    const rawPosts = await response.json();
+    posts = rawPosts.map(post => ({
+      id: post.id,
+      title: post.title,
+      content: post.content,
+      author_name: post.author_name || post.author_email?.split('@')[0] || 'Unknown',
+      author_email: post.author_email,
+      created_at: post.created_at,
+      comments_count: post.comments_count || 0
+    }));
+  }
+} catch (error) {
+  console.error('Error fetching posts:', error);
+}
+---
+
+<Layout title="Posts - Leaf by Leaf">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-900 via-green-800 to-teal-900">
+
+    <header class="bg-white/10 backdrop-blur-xl border-b border-white/20">
+      <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+            Posts
+          </h1>
+          <p class="text-white/70 text-sm">
+            Share your plant stories, {displayName}. Loaded {posts.length} posts.
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="/dashboard" class="text-emerald-200 hover:text-emerald-100 text-sm font-semibold">← Back to Dashboard</a>
+          <a href="#new-post" class="bg-emerald-500/90 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-2xl font-semibold shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 text-sm">
+            New Post
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-10 lg:py-14 space-y-10">
+
+      <section id="new-post" class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300">
+        <h2 class="text-2xl font-bold text-white mb-2">Create a New Post</h2>
+        <form method="post" action="/api/posts/create" class="space-y-5">
+          <div>
+            <label for="title" class="block text-sm font-semibold text-white/80 mb-2">Title</label>
+            <input id="title" name="title" type="text" required class="w-full px-4 py-3 rounded-2xl bg-emerald-950/40 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent" placeholder="My thriving Monstera..." />
+          </div>
+          <div>
+            <label for="content" class="block text-sm font-semibold text-white/80 mb-2">Content</label>
+            <textarea id="content" name="content" required rows="5" class="w-full px-4 py-3 rounded-2xl bg-emerald-950/40 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent resize-none" placeholder="Share your story, tips, or questions..."></textarea>
+          </div>
+          <input type="hidden" name="authorEmail" value={userEmailCookie} />
+          <div class="flex justify-end gap-3">
+            <button type="reset" class="px-5 py-2.5 rounded-2xl border border-white/20 text-white/80 hover:bg-white/10 transition-all duration-200 text-sm font-semibold">Clear</button>
+            <button type="submit" class="px-6 py-2.5 rounded-2xl bg-emerald-500/90 hover:bg-emerald-600 text-white font-semibold text-sm shadow-lg hover:shadow-emerald-500/25 transition-all duration-200">Publish Post</button>
+          </div>
+        </form>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold text-white mb-6">Latest Posts ({posts.length})</h2>
+        
+        {posts.map(post => (
+          <article key={post.id} class="bg-white/10 rounded-3xl border border-white/20 mb-6 overflow-hidden hover:bg-white/20 transition-all duration-300">
+            <div class="p-6">
+              <div class="flex justify-between items-start mb-3">
+                <h3 class="text-lg font-bold text-white flex-1 pr-4">{post.title}</h3>
+                <div class="flex gap-2 flex-shrink-0">
+                  <a href={`/posts/${post.id}/edit`} class="text-emerald-300 hover:text-emerald-100 text-sm px-3 py-1 rounded-xl hover:bg-white/10 transition-all whitespace-nowrap">Edit</a>
+                  <form method="post" action="./" class="inline">
+                    <input type="hidden" name="action" value="delete" />
+                    <input type="hidden" name="postId" value={post.id} />
+                    <button type="submit" class="text-red-300 hover:text-red-100 text-sm px-3 py-1 rounded-xl hover:bg-red/10 transition-all whitespace-nowrap" onclick="return confirm('Delete this post?')">Delete</button>
+                  </form>
+                </div>
+              </div>
+              <p class="text-white/90 mb-4 leading-relaxed">{post.content}</p>
+              <div class="flex flex-wrap items-center gap-4 text-xs text-white/50">
+                <span>By <span class="font-semibold text-white/80">{post.author_name}</span></span>
+                <span>•</span>
+                <time datetime={post.created_at}>{new Date(post.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</time>
+              </div>
+            </div>
+
+            <div class="border-t border-white/20">
+              <div class="p-6 bg-white/5">
+                <form method="post" action={`/api/posts/${post.id}/comments`} class="flex gap-3">
+                  <input type="hidden" name="postId" value={post.id} />
+                  <input 
+                    name="comment" 
+                    type="text" 
+                    placeholder="Add a comment..."
+                    required
+                    maxlength="500"
+                    class="flex-1 px-4 py-2.5 rounded-2xl bg-emerald-950/30 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm"
+                  />
+                  <button 
+                    type="submit" 
+                    class="px-6 py-2.5 bg-emerald-500/90 hover:bg-emerald-600 text-white text-sm font-semibold rounded-2xl shadow-lg hover:shadow-emerald-500/25 transition-all whitespace-nowrap"
+                  >
+                    Post
+                  </button>
+                </form>
+              </div>
+
+              {post.comments_count > 0 && (
+                <div class="p-6 bg-white/5 border-t border-white/20">
+                  <div class="flex items-center gap-2 text-sm text-emerald-300 mb-3">
+                    {post.comments_count} comment{post.comments_count > 1 ? 's' : ''}
+                    <span class="text-white/50 ml-auto text-xs cursor-pointer hover:text-emerald-200">View all</span>
+                  </div>
+                  <div class="space-y-2">
+                    <div class="text-xs text-white/70 p-3 bg-white/10 rounded-xl">
+                      Great post! My Monstera is thriving too! - {displayName}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </article>
+        ))}
+      </section>
+    </main>
+  </div>
+</Layout>
