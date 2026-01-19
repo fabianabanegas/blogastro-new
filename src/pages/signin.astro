@@ -1,12 +1,13 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { cookies, redirect } from "astro";
 
-const accessToken = cookies?.get?.("sb-access-token");
-const refreshToken = cookies?.get?.("sb-refresh-token");
+const cookies = Astro.cookies;  // ✅ Directo
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
 
 if (accessToken?.value && refreshToken?.value) {
-  return redirect("/dashboard");
+  return Astro.redirect("/posts");  // ✅ Astro.redirect
 }
 ---
 

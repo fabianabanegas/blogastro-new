@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import { redirect } from 'astro';
 
 const supabaseUrl = 'https://fszpmitzgepkbykhmgyu.supabase.co';
 const supabaseAnonKey = 'sb_publishable_PfBgFXn5d5KASgbiYBT4TQ_VtkYCJXv'; 
@@ -46,7 +45,7 @@ export async function POST({ request, params }) {
     if (error) throw error;
 
     console.log(`✏️ Post ${postId} actualizado`);
-    return redirect('/posts');
+    return Response.redirect('/posts', 302);
   } catch (error) {
     console.error('Edit error:', error);
     return new Response('Edit failed', { status: 500 });

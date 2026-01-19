@@ -39,7 +39,7 @@ export async function POST({ request, params, url }) {
     }
 
     console.log('¡Comentario creado! ID:', data.id);
-    return Response.redirect(new URL('/posts', url));
+    return Response.redirect('/posts', 302);
     
   } catch (error) {
     console.error('Error total:', error.message);

@@ -1,9 +1,8 @@
+
 import { createClient } from '@supabase/supabase-js';
-import { redirect } from 'astro';
 
-const supabaseUrl = 'https://fszpmitzgepkbykhmgyu.supabase.co';
-const supabaseAnonKey = 'sb_publishable_PfBgFXn5d5KASgbiYBT4TQ_VtkYCJXv'; 
-
+const supabaseUrl = import.meta.env.SUPABASE_URL || 'https://fszpmitzgepkbykhmgyu.supabase.co';
+const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY || 'sb_publishable_PfBgFXn5d5KASgbiYBT4TQ_VtkYCJXv'; 
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -14,6 +13,10 @@ export async function POST({ request, params }) {
     const cookieHeader = request.headers.get('cookie') || '';
     const userEmailMatch = cookieHeader.match(/user-email=([^;]+)/);
     const userEmail = userEmailMatch ? decodeURIComponent(userEmailMatch[1]) : null;
+
+    if (!userEmail) {
+      return new Response('Unauthorized', { status: 401 });
+    }
 
     const { data: post, error: fetchError } = await supabase
       .from('posts')
@@ -37,7 +40,9 @@ export async function POST({ request, params }) {
     if (error) throw error;
 
     console.log(`Post ${postId} eliminado`);
-    return redirect('/posts');
+
+    return Response.redirect('/posts', 302);
+    
   } catch (error) {
     console.error('Delete error:', error);
     return new Response('Delete failed', { status: 500 });

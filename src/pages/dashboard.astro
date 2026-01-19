@@ -1,14 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { redirect } from 'astro';
 
-const cookies = Astro.cookies;  // ✅ FIX: Use Astro.cookies
+const cookies = Astro.cookies;  
 
 const accessToken = cookies.get("sb-access-token");
 const refreshToken = cookies.get("sb-refresh-token");
 
 if (!accessToken?.value || !refreshToken?.value) {
-  return redirect("/signin");
+  return Astro.redirect("/signin"); 
+
 }
 
 const userEmailCookie = cookies.get("user-email")?.value || 'gardener@example.com';

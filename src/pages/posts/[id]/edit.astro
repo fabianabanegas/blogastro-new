@@ -1,7 +1,7 @@
 ---
-// src/pages/posts/[id]/edit.astro
+
 import Layout from "../../../layouts/Layout.astro";
-import { redirect } from "astro";
+return Astro.redirect("/path");
 
 const cookies = Astro.cookies;
 const accessToken = cookies.get("sb-access-token");
@@ -19,7 +19,7 @@ const supabaseKey = 'sb_publishable_PfBgFXn5d5KASgbiYBT4TQ_VtkYCJXv';
 
 const postId = Astro.params.id;
 
-// 👇 NUEVO: Manejar UPDATE solo en POST
+
 if (Astro.request.method === 'POST') {
   const formData = await Astro.request.formData();
   if (formData.get('action') === 'update' && formData.get('postId') === postId) {
